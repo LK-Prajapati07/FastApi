@@ -10,69 +10,97 @@ expected_columns = joblib.load('column.pkl')
 # Page config
 st.set_page_config(page_title="Heart Disease Predictor", page_icon="❤️", layout="wide")
 
-# Custom CSS
+# Advanced CSS (Glassmorphism + Gradient)
 st.markdown("""
-    <style>
-    .main {
-        background-color: #f5f7fa;
-    }
-    .title {
-        text-align: center;
-        font-size: 40px;
-        font-weight: bold;
-        color: #e63946;
-    }
-    .subtitle {
-        text-align: center;
-        font-size: 18px;
-        color: #555;
-    }
-    .card {
-        padding: 20px;
-        border-radius: 15px;
-        background-color: white;
-        box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-    }
-    </style>
+<style>
+/* Background */
+.stApp {
+    background: linear-gradient(135deg, #1d3557, #457b9d);
+    color: white;
+}
+
+/* Title */
+.title {
+    text-align: center;
+    font-size: 45px;
+    font-weight: bold;
+    color: #f1faee;
+}
+
+/* Subtitle */
+.subtitle {
+    text-align: center;
+    font-size: 18px;
+    color: #a8dadc;
+    margin-bottom: 20px;
+}
+
+/* Glass Card */
+.card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    margin-bottom: 20px;
+}
+
+/* Button */
+div.stButton > button {
+    background: linear-gradient(90deg, #e63946, #ff6b6b);
+    color: white;
+    font-size: 18px;
+    border-radius: 10px;
+    height: 50px;
+    border: none;
+    transition: 0.3s;
+}
+
+div.stButton > button:hover {
+    transform: scale(1.05);
+    background: linear-gradient(90deg, #ff6b6b, #e63946);
+}
+</style>
 """, unsafe_allow_html=True)
 
-# Title
-st.markdown('<div class="title">❤️ Heart Disease Prediction</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Enter patient details to assess risk</div>', unsafe_allow_html=True)
+# Header
+st.markdown('<div class="title">❤️ Heart Disease Predictor</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">AI-powered health risk analysis</div>', unsafe_allow_html=True)
 
-st.write("")
-
-# Layout: two columns
+# Layout
 col1, col2 = st.columns(2)
 
-# LEFT COLUMN
 with col1:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown("### 🧍 Personal Info")
     age = st.slider("Age", 18, 100, 40)
     sex = st.selectbox("Sex", ["M", "F"])
     chest_pain = st.selectbox("Chest Pain Type", ["ATA", "NAP", "TA", "ASY"])
+    st.markdown("</div>", unsafe_allow_html=True)
 
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown("### 🫀 Heart Metrics")
-    resting_bp = st.number_input("Resting Blood Pressure (mm Hg)", 80, 200, 120)
-    cholesterol = st.number_input("Cholesterol (mg/dL)", 100, 600, 200)
+    resting_bp = st.number_input("Resting BP", 80, 200, 120)
+    cholesterol = st.number_input("Cholesterol", 100, 600, 200)
     max_hr = st.slider("Max Heart Rate", 60, 220, 150)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-# RIGHT COLUMN
 with col2:
-    st.markdown("### 🧪 Medical Details")
-    fasting_bs = st.selectbox("Fasting Blood Sugar > 120 mg/dL", [0, 1])
-    resting_ecg = st.selectbox("Resting ECG", ["Normal", "ST", "LVH"])
-    exercise_angina = st.selectbox("Exercise-Induced Angina", ["Y", "N"])
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown("### 🧪 Medical Info")
+    fasting_bs = st.selectbox("Fasting Sugar >120", [0, 1])
+    resting_ecg = st.selectbox("ECG", ["Normal", "ST", "LVH"])
+    exercise_angina = st.selectbox("Angina", ["Y", "N"])
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("### 📉 Advanced Metrics")
-    oldpeak = st.slider("Oldpeak (ST Depression)", 0.0, 6.0, 1.0)
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown("### 📉 Advanced")
+    oldpeak = st.slider("Oldpeak", 0.0, 6.0, 1.0)
     st_slope = st.selectbox("ST Slope", ["Up", "Flat", "Down"])
+    st.markdown("</div>", unsafe_allow_html=True)
 
-st.write("")
-
-# Predict button (centered)
-predict_btn = st.button("🔍 Predict Risk", use_container_width=True)
+# Button
+predict_btn = st.button("🚀 Predict Now", use_container_width=True)
 
 if predict_btn:
 
@@ -98,22 +126,26 @@ if predict_btn:
 
     input_df = input_df[expected_columns]
     scaled_input = scaler.transform(input_df)
+
+    # Prediction
     prediction = model.predict(scaled_input)[0]
+
+    # Probability (if available)
+    try:
+        prob = model.predict_proba(scaled_input)[0][1]
+    except:
+        prob = None
 
     st.write("")
 
-    # Result Display (Styled)
+    # Result Card
     if prediction == 1:
-        st.markdown(
-            """<div style="background-color:#ff4d4d;padding:20px;border-radius:10px;text-align:center;color:white;font-size:22px;">
-            ⚠️ High Risk of Heart Disease
-            </div>""",
-            unsafe_allow_html=True
-        )
+        st.error("⚠️ High Risk of Heart Disease")
     else:
-        st.markdown(
-            """<div style="background-color:#2ecc71;padding:20px;border-radius:10px;text-align:center;color:white;font-size:22px;">
-            ✅ Low Risk of Heart Disease
-            </div>""",
-            unsafe_allow_html=True
-        )
+        st.success("✅ Low Risk of Heart Disease")
+
+    # Probability bar
+    if prob is not None:
+        st.markdown("### 📊 Risk Probability")
+        st.progress(int(prob * 100))
+        st.write(f"**Risk Score:** {prob*100:.2f}%")
