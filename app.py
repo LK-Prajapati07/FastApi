@@ -2,17 +2,18 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# Load model
+# ------------------ LOAD MODEL ------------------
 model = joblib.load('heart_disease_model.pkl')
 scaler = joblib.load('scaler.pkl')
 expected_columns = joblib.load('column.pkl')
 
-# Page config
+# ------------------ PAGE CONFIG ------------------
 st.set_page_config(page_title="Heart Disease Predictor", page_icon="❤️", layout="wide")
 
-# Advanced CSS (Glassmorphism + Gradient)
+# ------------------ CSS (STATIC CLEAN UI) ------------------
 st.markdown("""
 <style>
+
 /* Background */
 .stApp {
     background: linear-gradient(135deg, #1d3557, #457b9d);
@@ -22,52 +23,61 @@ st.markdown("""
 /* Title */
 .title {
     text-align: center;
-    font-size: 45px;
+    font-size: 40px;
     font-weight: bold;
-    color: #f1faee;
 }
 
 /* Subtitle */
 .subtitle {
     text-align: center;
-    font-size: 18px;
+    font-size: 16px;
     color: #a8dadc;
     margin-bottom: 20px;
 }
 
-/* Glass Card */
+/* Card */
 .card {
     background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(12px);
     padding: 20px;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    border-radius: 15px;
     margin-bottom: 20px;
 }
 
 /* Button */
 div.stButton > button {
-    background: linear-gradient(90deg, #e63946, #ff6b6b);
+    background: #e63946;
     color: white;
-    font-size: 18px;
-    border-radius: 10px;
-    height: 50px;
+    font-size: 16px;
+    border-radius: 8px;
+    height: 45px;
     border: none;
-    transition: 0.3s;
 }
 
-div.stButton > button:hover {
-    transform: scale(1.05);
-    background: linear-gradient(90deg, #ff6b6b, #e63946);
+/* Result */
+.result-card {
+    text-align: center;
+    padding: 20px;
+    border-radius: 15px;
+    font-size: 20px;
+    font-weight: bold;
 }
+
+.high-risk {
+    background: rgba(255, 0, 0, 0.2);
+}
+
+.low-risk {
+    background: rgba(0, 255, 150, 0.2);
+}
+
 </style>
 """, unsafe_allow_html=True)
 
-# Header
+# ------------------ HEADER ------------------
 st.markdown('<div class="title">❤️ Heart Disease Predictor</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">AI-powered health risk analysis</div>', unsafe_allow_html=True)
 
-# Layout
+# ------------------ INPUT UI ------------------
 col1, col2 = st.columns(2)
 
 with col1:
@@ -99,9 +109,10 @@ with col2:
     st_slope = st.selectbox("ST Slope", ["Up", "Flat", "Down"])
     st.markdown("</div>", unsafe_allow_html=True)
 
-# Button
+# ------------------ BUTTON ------------------
 predict_btn = st.button("🚀 Predict Now", use_container_width=True)
 
+# ------------------ PREDICTION ------------------
 if predict_btn:
 
     raw_input = {
@@ -127,10 +138,8 @@ if predict_btn:
     input_df = input_df[expected_columns]
     scaled_input = scaler.transform(input_df)
 
-    # Prediction
     prediction = model.predict(scaled_input)[0]
 
-    # Probability (if available)
     try:
         prob = model.predict_proba(scaled_input)[0][1]
     except:
@@ -138,13 +147,19 @@ if predict_btn:
 
     st.write("")
 
-    # Result Card
+    # ------------------ RESULT ------------------
     if prediction == 1:
-        st.error("⚠️ High Risk of Heart Disease")
+        st.markdown(
+            '<div class="result-card high-risk">⚠️ High Risk of Heart Disease</div>',
+            unsafe_allow_html=True
+        )
     else:
-        st.success("✅ Low Risk of Heart Disease")
+        st.markdown(
+            '<div class="result-card low-risk">✅ Low Risk of Heart Disease</div>',
+            unsafe_allow_html=True
+        )
 
-    # Probability bar
+    # ------------------ PROBABILITY ------------------
     if prob is not None:
         st.markdown("### 📊 Risk Probability")
         st.progress(int(prob * 100))
